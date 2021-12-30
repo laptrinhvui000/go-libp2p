@@ -3,18 +3,19 @@ package config
 import (
 	"testing"
 
+	"github.com/libp2p/go-libp2p-core/network"
+
 	"github.com/libp2p/go-libp2p-core/host"
 	"github.com/libp2p/go-libp2p-core/peer"
 	swarmt "github.com/libp2p/go-libp2p-swarm/testing"
 	bhost "github.com/libp2p/go-libp2p/p2p/host/basic"
 
-	"github.com/libp2p/go-libp2p-core/mux"
 	yamux "github.com/libp2p/go-libp2p-yamux"
 )
 
 func TestMuxerSimple(t *testing.T) {
 	// single
-	_, err := MuxerConstructor(func(_ peer.ID) mux.Multiplexer { return nil })
+	_, err := MuxerConstructor(func(_ peer.ID) network.Multiplexer { return nil })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,14 +28,14 @@ func TestMuxerByValue(t *testing.T) {
 	}
 }
 func TestMuxerDuplicate(t *testing.T) {
-	_, err := MuxerConstructor(func(_ peer.ID, _ peer.ID) mux.Multiplexer { return nil })
+	_, err := MuxerConstructor(func(_ peer.ID, _ peer.ID) network.Multiplexer { return nil })
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestMuxerError(t *testing.T) {
-	_, err := MuxerConstructor(func() (mux.Multiplexer, error) { return nil, nil })
+	_, err := MuxerConstructor(func() (network.Multiplexer, error) { return nil, nil })
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,8 +46,8 @@ func TestMuxerBadTypes(t *testing.T) {
 		func() error { return nil },
 		func() string { return "" },
 		func() {},
-		func(string) mux.Multiplexer { return nil },
-		func(string) (mux.Multiplexer, error) { return nil, nil },
+		func(string) network.Multiplexer { return nil },
+		func(string) (network.Multiplexer, error) { return nil, nil },
 		nil,
 		"testing",
 	} {

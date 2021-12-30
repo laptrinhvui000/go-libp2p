@@ -10,7 +10,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/libp2p/go-libp2p-core/mux"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/protocol"
 )
@@ -105,8 +104,9 @@ func (s *stream) Stat() network.Stats {
 	return s.stat
 }
 
-func (s *stream) SetProtocol(proto protocol.ID) {
+func (s *stream) SetProtocol(proto protocol.ID) error {
 	s.protocol.Store(proto)
+	return nil
 }
 
 func (s *stream) CloseWrite() error {
@@ -132,8 +132,8 @@ func (s *stream) Close() error {
 
 func (s *stream) Reset() error {
 	// Cancel any pending reads/writes with an error.
-	s.write.CloseWithError(mux.ErrReset)
-	s.read.CloseWithError(mux.ErrReset)
+	s.write.CloseWithError(network.ErrReset)
+	s.read.CloseWithError(network.ErrReset)
 
 	select {
 	case s.reset <- struct{}{}:
@@ -236,7 +236,7 @@ func (s *stream) transport() {
 				case s.reset <- struct{}{}:
 				default:
 				}
-				return mux.ErrReset
+				return network.ErrReset
 			}
 			if err := drainBuf(); err != nil {
 				return err
@@ -256,14 +256,14 @@ func (s *stream) transport() {
 		// Reset takes precedent.
 		select {
 		case <-s.reset:
-			s.writeErr = mux.ErrReset
+			s.writeErr = network.ErrReset
 			return
 		default:
 		}
 
 		select {
 		case <-s.reset:
-			s.writeErr = mux.ErrReset
+			s.writeErr = network.ErrReset
 			return
 		case <-s.close:
 			if err := drainBuf(); err != nil {
@@ -287,6 +287,10 @@ func (s *stream) transport() {
 			}
 		}
 	}
+}
+
+func (s *stream) Scope() network.StreamScope {
+	return nil
 }
 
 func (s *stream) cancelWrite(err error) {

@@ -33,10 +33,10 @@ func TestConstructorWithOpts(t *testing.T) {
 	var options []int
 	c, err := TransportConstructor(func(_ transport.Upgrader, opts ...int) (transport.Transport, error) {
 		options = opts
-		return tcp.NewTCPTransport(nil)
+		return tcp.NewTCPTransport(nil, nil)
 	}, 42, 1337)
 	require.NoError(t, err)
-	_, err = c(nil, nil, nil, nil)
+	_, err = c(nil, nil, nil, nil, nil)
 	require.NoError(t, err)
 	require.Equal(t, []int{42, 1337}, options)
 }

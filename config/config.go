@@ -87,10 +87,12 @@ type Config struct {
 	AddrsFactory    bhost.AddrsFactory
 	ConnectionGater connmgr.ConnectionGater
 
-	ConnManager connmgr.ConnManager
-	NATManager  NATManagerC
-	Peerstore   peerstore.Peerstore
-	Reporter    metrics.Reporter
+	ConnManager     connmgr.ConnManager
+	ResourceManager network.ResourceManager
+
+	NATManager NATManagerC
+	Peerstore  peerstore.Peerstore
+	Reporter   metrics.Reporter
 
 	MultiaddrResolver *madns.Resolver
 
@@ -183,7 +185,7 @@ func (cfg *Config) addTransports(h host.Host) error {
 	if err != nil {
 		return err
 	}
-	tpts, err := makeTransports(h, upgrader, cfg.ConnectionGater, cfg.PSK, cfg.Transports)
+	tpts, err := makeTransports(h, upgrader, cfg.ConnectionGater, cfg.PSK, cfg.ResourceManager, cfg.Transports)
 	if err != nil {
 		return err
 	}

@@ -18,7 +18,6 @@ import (
 
 	"github.com/libp2p/go-libp2p-core/crypto"
 	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/mux"
 	"github.com/libp2p/go-libp2p-core/network"
 	"github.com/libp2p/go-libp2p-core/peer"
 
@@ -60,7 +59,7 @@ func getNetHosts(t *testing.T, ctx context.Context, n int) (hosts []host.Host, u
 		upgrader := swarmt.GenUpgrader(t, netw)
 		upgraders = append(upgraders, upgrader)
 
-		tpt, err := tcp.NewTCPTransport(upgrader)
+		tpt, err := tcp.NewTCPTransport(upgrader, nil)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -246,12 +245,12 @@ func TestRelayLimitTime(t *testing.T) {
 	if n > 0 {
 		t.Fatalf("expected to write 0 bytes, wrote %d", n)
 	}
-	if err != mux.ErrReset {
+	if err != network.ErrReset {
 		t.Fatalf("expected reset, but got %s", err)
 	}
 
 	err = <-rch
-	if err != mux.ErrReset {
+	if err != network.ErrReset {
 		t.Fatalf("expected reset, but got %s", err)
 	}
 }
@@ -279,7 +278,7 @@ func TestRelayLimitData(t *testing.T) {
 		}
 
 		n, err := s.Read(buf)
-		if err != mux.ErrReset {
+		if err != network.ErrReset {
 			t.Fatalf("expected reset but got %s", err)
 		}
 		rch <- n
