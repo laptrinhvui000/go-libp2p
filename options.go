@@ -346,6 +346,17 @@ func ConnectionGater(cg connmgr.ConnectionGater) Option {
 	}
 }
 
+// ResourceManager configures libp2p to use the given ResourceManager.
+func ResourceManager(rcmgr network.ResourceManager) Option {
+	return func(cfg *Config) error {
+		if cfg.ResourceManager != nil {
+			return errors.New("cannot configure multiple resource managers")
+		}
+		cfg.ResourceManager = rcmgr
+		return nil
+	}
+}
+
 // NATPortMap configures libp2p to use the default NATManager. The default
 // NATManager will attempt to open a port in your network's firewall using UPnP.
 func NATPortMap() Option {
