@@ -428,6 +428,8 @@ github.com/libp2p/go-libp2p-quic-transport v0.15.1-0.20220104132014-daa8e64b8e6b
 github.com/libp2p/go-libp2p-quic-transport v0.15.1-0.20220114115759-976381905b33/go.mod h1:yjmxhFijhxWIij9ScEQircKnzCvRZuRzrTuAODcOPSk=
 github.com/libp2p/go-libp2p-quic-transport v0.15.1-0.20220114115800-cfb93f481479 h1:OqATjP9wZ7xubzpRqZ/ZjC929kDfB3gUXr5ItTrt8hY=
 github.com/libp2p/go-libp2p-quic-transport v0.15.1-0.20220114115800-cfb93f481479/go.mod h1:y3uJ9fgIbbc96i+l9EJI7Nl71its4TdU6TkGMgZIllY=
+github.com/libp2p/go-libp2p-resource-manager v0.0.0-20220114115911-737482d123a1 h1:1dRIj0h+0uokR6ekUIEp0DfSFBV3y7P5bkEDeS7hMNk=
+github.com/libp2p/go-libp2p-resource-manager v0.0.0-20220114115911-737482d123a1/go.mod h1:4DKaxAzerh2xLIJSsnA13TDNJvR0IIqGLk3qWomIFvk=
 github.com/libp2p/go-libp2p-swarm v0.8.0/go.mod h1:sOMp6dPuqco0r0GHTzfVheVBh6UEL0L1lXUZ5ot2Fvc=
 github.com/libp2p/go-libp2p-swarm v0.9.1-0.20220104132952-1894fa82d9a9/go.mod h1:s3UxbgMKgF9Iw84vHI/6Bi2SqzTqakCrQ+BIVVFjYa0=
 github.com/libp2p/go-libp2p-swarm v0.9.1-0.20220114122938-ef54b2f2246b h1:xVrmRwdITw7RrHg7ZkWAau3CiveUVS6U8uDvaXUzPwA=
@@ -647,6 +649,8 @@ github.com/openzipkin/zipkin-go v0.2.1/go.mod h1:NaW6tEwdmWMaCDZzg8sh+IBNOxHMPnh
 github.com/openzipkin/zipkin-go v0.2.2/go.mod h1:NaW6tEwdmWMaCDZzg8sh+IBNOxHMPnhQw8ySjnjRyN4=
 github.com/pact-foundation/pact-go v1.0.4/go.mod h1:uExwJY4kCzNPcHRj+hCR/HBbOOIwwtUjcrb0b5/5kLM=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
+github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58 h1:onHthvaw9LFnH4t2DcNVpwGmV9E1BkGknEliJkfwQj0=
+github.com/pbnjay/memory v0.0.0-20210728143218-7b4eea64cf58/go.mod h1:DXv8WO4yhMYhSNPKjeNKa5WY9YCIEBRbNzFFPJbWO6Y=
 github.com/pborman/uuid v1.2.0/go.mod h1:X/NO0urCmaxf9VXbdlT7C2Yzkj2IKimNn4k+gtPdI/k=
 github.com/pelletier/go-toml v1.2.0/go.mod h1:5z9KED0ma1S8pY6P1sdut58dfprrGBbd/94hg7ilaic=
 github.com/performancecopilot/speed v3.0.0+incompatible/go.mod h1:/CLtqpZ5gBg1M9iaPbIdPPGyKcA8hKdoy6hAWba7Yac=
