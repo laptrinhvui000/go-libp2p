@@ -26,7 +26,7 @@ var (
 type Echo struct {
 	Host host.Host
 
-	WaitBeforeRead, WaitBeforeWrite func() error
+	BeforeReserve, BeforeRead, BeforeWrite, BeforeDone func() error
 
 	mx     sync.Mutex
 	status EchoStatus
@@ -60,6 +60,15 @@ func (e *Echo) handleStream(s network.Stream) {
 	e.status.StreamsIn++
 	e.mx.Unlock()
 
+	if e.BeforeReserve != nil {
+		if err := e.BeforeReserve(); err != nil {
+			echoLog.Debugf("error syncing before reserve: %s", err)
+
+			s.Reset()
+			return
+		}
+	}
+
 	if err := s.Scope().SetService(EchoService); err != nil {
 		echoLog.Debugf("error attaching stream to echo service: %s", err)
 
@@ -82,9 +91,9 @@ func (e *Echo) handleStream(s network.Stream) {
 		return
 	}
 
-	if e.WaitBeforeRead != nil {
-		if err := e.WaitBeforeRead(); err != nil {
-			echoLog.Debugf("error waiting before read: %s", err)
+	if e.BeforeRead != nil {
+		if err := e.BeforeRead(); err != nil {
+			echoLog.Debugf("error syncing before read: %s", err)
 
 			s.Reset()
 			return
@@ -116,9 +125,9 @@ func (e *Echo) handleStream(s network.Stream) {
 	e.status.EchosIn++
 	e.mx.Unlock()
 
-	if e.WaitBeforeWrite != nil {
-		if err := e.WaitBeforeWrite(); err != nil {
-			echoLog.Debugf("error waiting before write: %s", err)
+	if e.BeforeWrite != nil {
+		if err := e.BeforeWrite(); err != nil {
+			echoLog.Debugf("error syncing before write: %s", err)
 
 			s.Reset()
 			return
@@ -143,6 +152,14 @@ func (e *Echo) handleStream(s network.Stream) {
 	e.mx.Unlock()
 
 	s.CloseWrite()
+
+	if e.BeforeDone != nil {
+		if err := e.BeforeDone(); err != nil {
+			echoLog.Debugf("error syncing before done: %s", err)
+
+			s.Reset()
+		}
+	}
 }
 
 func (e *Echo) Echo(p peer.ID, what string) error {
