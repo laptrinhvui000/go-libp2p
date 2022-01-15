@@ -3,6 +3,7 @@ package itest
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"sync/atomic"
 	"testing"
@@ -14,13 +15,25 @@ import (
 	"github.com/libp2p/go-libp2p-core/peer"
 )
 
-func makeRcmgrOption(t *testing.T, limiter *rcmgr.BasicLimiter) func() libp2p.Option {
-	return func() libp2p.Option {
-		mgr, err := rcmgr.NewResourceManager(limiter)
+func makeRcmgrOption(t *testing.T, limiter *rcmgr.BasicLimiter, test string) func(int) libp2p.Option {
+	return func(i int) libp2p.Option {
+		var opts []rcmgr.Option
+
+		if os.Getenv("LIBP2P_TEST_RCMGR_TRACE") == "1" {
+			opts = append(opts, rcmgr.WithTrace(fmt.Sprintf("%s-%d.json.gz", test, i)))
+		}
+
+		mgr, err := rcmgr.NewResourceManager(limiter, opts...)
 		if err != nil {
 			t.Fatal(err)
 		}
 		return libp2p.ResourceManager(mgr)
+	}
+}
+
+func closeRcmgrs(echos []*Echo) {
+	for _, e := range echos {
+		e.Host.Network().ResourceManager().Close()
 	}
 }
 
@@ -31,8 +44,9 @@ func TestResourceManagerConnInbound(t *testing.T) {
 	limiter.SystemLimits = limiter.SystemLimits.WithConnLimit(3, 1024, 1024)
 	limiter.DefaultPeerLimits = limiter.DefaultPeerLimits.WithConnLimit(1, 16, 16)
 
-	echos := createEchos(t, 5, makeRcmgrOption(t, limiter))
+	echos := createEchos(t, 5, makeRcmgrOption(t, limiter, "TestResourceManagerConnInbound"))
 	defer closeEchos(echos)
+	defer closeRcmgrs(echos)
 
 	for i := 1; i < 4; i++ {
 		err := echos[i].Host.Connect(context.Background(), peer.AddrInfo{ID: echos[0].Host.ID()})
@@ -61,8 +75,9 @@ func TestResourceManagerConnOutbound(t *testing.T) {
 	limiter := rcmgr.NewFixedLimiter(1 << 30)
 	limiter.SystemLimits = limiter.SystemLimits.WithConnLimit(1024, 3, 1024)
 	limiter.DefaultPeerLimits = limiter.DefaultPeerLimits.WithConnLimit(16, 1, 16)
-	echos := createEchos(t, 5, makeRcmgrOption(t, limiter))
+	echos := createEchos(t, 5, makeRcmgrOption(t, limiter, "TestResourceManagerConnOutbound"))
 	defer closeEchos(echos)
+	defer closeRcmgrs(echos)
 
 	for i := 1; i < 4; i++ {
 		err := echos[0].Host.Connect(context.Background(), peer.AddrInfo{ID: echos[i].Host.ID()})
@@ -90,8 +105,9 @@ func TestResourceManagerServiceInbound(t *testing.T) {
 	// we specify: 3 streams for the service, and we try to create 4 streams
 	limiter := rcmgr.NewFixedLimiter(1 << 30)
 	limiter.DefaultServiceLimits = limiter.DefaultServiceLimits.WithStreamLimit(3, 1024, 1024)
-	echos := createEchos(t, 5, makeRcmgrOption(t, limiter))
+	echos := createEchos(t, 5, makeRcmgrOption(t, limiter, "TestResourceManagerServiceInbound"))
 	defer closeEchos(echos)
+	defer closeRcmgrs(echos)
 
 	ready := new(chan struct{})
 	echos[0].BeforeDone = waitForChannel(ready, time.Minute)
@@ -139,8 +155,9 @@ func TestResourceManagerServicePeerInbound(t *testing.T) {
 	limiter.ServicePeerLimits = map[string]rcmgr.Limit{
 		EchoService: limiter.DefaultPeerLimits.WithStreamLimit(2, 1024, 1024),
 	}
-	echos := createEchos(t, 5, makeRcmgrOption(t, limiter))
+	echos := createEchos(t, 5, makeRcmgrOption(t, limiter, "TestResourceManagerServicePeerInbound"))
 	defer closeEchos(echos)
+	defer closeRcmgrs(echos)
 
 	count := new(int32)
 	ready := new(chan struct{})

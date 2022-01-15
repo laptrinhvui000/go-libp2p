@@ -11,13 +11,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func createEchos(t *testing.T, count int, makeOpts ...func() libp2p.Option) []*Echo {
+func createEchos(t *testing.T, count int, makeOpts ...func(int) libp2p.Option) []*Echo {
 	result := make([]*Echo, 0, count)
 
 	for i := 0; i < count; i++ {
 		opts := make([]libp2p.Option, 0, len(makeOpts))
 		for _, makeOpt := range makeOpts {
-			opts = append(opts, makeOpt())
+			opts = append(opts, makeOpt(i))
 		}
 
 		h, err := libp2p.New(opts...)
