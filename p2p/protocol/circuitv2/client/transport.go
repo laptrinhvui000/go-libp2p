@@ -54,6 +54,10 @@ func (c *Client) Dial(ctx context.Context, a ma.Multiaddr, p peer.ID) (transport
 	if err != nil {
 		return nil, err
 	}
+	if err := connScope.SetPeer(p); err != nil {
+		connScope.Done()
+		return nil, err
+	}
 	conn, err := c.dial(ctx, a, p)
 	if err != nil {
 		connScope.Done()
