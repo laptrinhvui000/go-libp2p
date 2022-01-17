@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	err := http.ListenAndServe(":8080", http.FileServer(http.Dir("./out")))
+	err := http.ListenAndServe(":9000", http.FileServer(http.Dir("./out")))
 	if err != nil {
 		fmt.Println("Failed to start server", err)
 		return

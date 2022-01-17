@@ -1,15 +1,15 @@
 package main
 
 import (
-	"context"
+	// "context"
 	"fmt"
-	"time"
+	// "time"
 
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p-core/peer"
+	// "github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
-	"github.com/multiformats/go-multiaddr"
+	// "github.com/multiformats/go-multiaddr"
 )
 
 func main() {
@@ -34,23 +34,27 @@ func main() {
 	for _, addr := range host.Addrs() {
 		fmt.Println("Listening on", addr)
 	}
-
-	targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
-	if err != nil {
-		panic(err)
-	}
-
-	targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
-	if err != nil {
-		panic(err)
-	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
-	defer cancel()
-	err = host.Connect(ctx, *targetInfo)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Connected to", targetInfo.ID)
+	fmt.Println(host.ID())
+	<-make(chan bool)
 }
+
+// func connectTo(p string){
+// 	targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+// 	defer cancel()
+// 	err = host.Connect(ctx, *targetInfo)
+// 	if err != nil {
+// 		panic(err)
+// 	}
+
+// 	fmt.Println("Connected to", targetInfo.ID)
+// }
