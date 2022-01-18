@@ -4,26 +4,25 @@ import (
 	"syscall/js"
 )
 
-// function definition
-func add(this js.Value, i []js.Value) interface{} {
-	return js.ValueOf(i[0].Int()+i[1].Int())
-	}  
+var state interface{}
 
-func testPrint(this js.Value, i []js.Value) interface{}{
-	println(js.ValueOf(i[0]).String())
-	return js.ValueOf(i[0])
-}
+func testPrint() js.Func {
+	jsonFunc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
+		if len(args) != 1 {
+			return "Invalid no of arguments passed"
+		}
+		state = args[0].String()
+		println("input %s", state)
+		js.Global().Set("goState", state)
 
-func registerCallbacks() {
-	js.Global().Set("add", js.FuncOf(add))
-	js.Global().Set("testPrint", js.FuncOf(testPrint))
+		return true
+	})
+	return jsonFunc
 }
 
 func main() {
-    c := make(chan struct{}, 0)
+	println("Go Web Assembly")
+	js.Global().Set("testPrint", testPrint())	
 
-    println("WASM Go Initialized")
-    // register functions
-    registerCallbacks()
-    <-c
+	<-make(chan bool)
 }
