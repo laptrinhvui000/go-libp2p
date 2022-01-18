@@ -12,7 +12,8 @@ import (
 
 	"github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
-	quic "github.com/libp2p/go-libp2p-quic-transport"
+
+	// quic "github.com/libp2p/go-libp2p-quic-transport"
 
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
 	"github.com/libp2p/go-libp2p-core/crypto"
@@ -21,6 +22,7 @@ import (
 	discovery "github.com/libp2p/go-libp2p-discovery"
 	host "github.com/libp2p/go-libp2p-host"
 	dht "github.com/libp2p/go-libp2p-kad-dht"
+	mplex "github.com/libp2p/go-libp2p-mplex"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	tls "github.com/libp2p/go-libp2p-tls"
 	yamux "github.com/libp2p/go-libp2p-yamux"
@@ -83,7 +85,7 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	transports := libp2p.ChainOptions(
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(ws.New),
-		libp2p.Transport(quic.NewTransport),
+		// libp2p.Transport(quic.NewTransport),
 	)
 	// Handle any potential error
 	if err != nil {
@@ -106,8 +108,8 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	listenAddrs := libp2p.ListenAddrStrings(
 		"/ip4/0.0.0.0/tcp/0",
 		"/ip4/0.0.0.0/tcp/0/ws",
-		"/ip4/127.0.0.1/udp/0/quic",
-		"/ip6/::/udp/0/quic",
+		// "/ip4/127.0.0.1/udp/0/quic",
+		// "/ip6/::/udp/0/quic",
 	)
 
 	// Handle any potential error
@@ -121,7 +123,11 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	logrus.Traceln("Generated P2P Address Listener Configuration.")
 
 	// Set up the stream multiplexer and connection manager options
-	muxer := libp2p.Muxer("/yamux/1.0.0", yamux.DefaultTransport)
+	muxers := libp2p.ChainOptions(
+		libp2p.Muxer("/yamux/1.0.0", yamux.DefaultTransport),
+		libp2p.Muxer("/mplex/6.7.0", mplex.DefaultTransport),
+	)
+	// muxer := libp2p.Muxer("/yamux/1.0.0", yamux.DefaultTransport)
 	conn := libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute))
 
 	// Trace log
@@ -146,7 +152,7 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	logrus.Traceln("Generated P2P Routing Configurations.")
 
 	// opts := libp2p.ChainOptions(identity, listen, security, transports, muxer, conn, nat, routing, relay)
-	opts := libp2p.ChainOptions(identity, listenAddrs, security, transports, muxer, conn, nat, routing, relay)
+	opts := libp2p.ChainOptions(identity, listenAddrs, security, transports, muxers, conn, nat, routing, relay)
 
 	// Construct a new libP2P host with the created options
 	// libhost, err := libp2p.New(ctx, opts)

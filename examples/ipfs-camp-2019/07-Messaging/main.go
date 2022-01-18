@@ -9,27 +9,27 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/peer"
+	// "github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
 	kaddht "github.com/libp2p/go-libp2p-kad-dht"
 	mplex "github.com/libp2p/go-libp2p-mplex"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	tls "github.com/libp2p/go-libp2p-tls"
 	yamux "github.com/libp2p/go-libp2p-yamux"
-	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
+	// "github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
-	"github.com/multiformats/go-multiaddr"
+	// "github.com/multiformats/go-multiaddr"
 )
 
-type mdnsNotifee struct {
-	h   host.Host
-	ctx context.Context
-}
+// type mdnsNotifee struct {
+// 	h   host.Host
+// 	ctx context.Context
+// }
 
-func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	m.h.Connect(m.ctx, pi)
-}
+// func (m *mdnsNotifee) HandlePeerFound(pi peer.AddrInfo) {
+// 	m.h.Connect(m.ctx, pi)
+// }
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -90,28 +90,29 @@ func main() {
 	for _, addr := range host.Addrs() {
 		fmt.Println("Listening on", addr)
 	}
+	fmt.Println(host.ID())
 
-	targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
-	if err != nil {
-		panic(err)
-	}
+	// targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
-	if err != nil {
-		panic(err)
-	}
+	// targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	err = host.Connect(ctx, *targetInfo)
-	if err != nil {
-		panic(err)
-	}
+	// err = host.Connect(ctx, *targetInfo)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	fmt.Println("Connected to", targetInfo.ID)
+	// fmt.Println("Connected to", targetInfo.ID)
 
-	mdns := mdns.NewMdnsService(host, "", &mdnsNotifee{h: host, ctx: ctx})
-	if err := mdns.Start(); err != nil {
-		panic(err)
-	}
+	// mdns := mdns.NewMdnsService(host, "", &mdnsNotifee{h: host, ctx: ctx})
+	// if err := mdns.Start(); err != nil {
+	// 	panic(err)
+	// }
 
 	err = dht.Bootstrap(ctx)
 	if err != nil {
@@ -119,9 +120,7 @@ func main() {
 	}
 
 	donec := make(chan struct{}, 1)
-	// TODO: modify this chat input loop to use the protobufs defined in this
-	// folder.
-	go chatInputLoop(ctx, topic, donec)
+	go chatInputLoop(ctx, host, topic, donec)
 
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT)

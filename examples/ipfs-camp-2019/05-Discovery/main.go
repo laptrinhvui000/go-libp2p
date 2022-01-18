@@ -8,13 +8,15 @@ import (
 	"syscall"
 
 	"github.com/libp2p/go-libp2p"
-	"github.com/libp2p/go-libp2p-core/peer"
+	// "github.com/libp2p/go-libp2p-core/peer"
 	mplex "github.com/libp2p/go-libp2p-mplex"
 	tls "github.com/libp2p/go-libp2p-tls"
 	yamux "github.com/libp2p/go-libp2p-yamux"
 	"github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
-	"github.com/multiformats/go-multiaddr"
+	// quic "github.com/libp2p/go-libp2p-quic-transport"
+
+	// "github.com/multiformats/go-multiaddr"
 )
 
 func main() {
@@ -24,6 +26,7 @@ func main() {
 	transports := libp2p.ChainOptions(
 		libp2p.Transport(tcp.NewTCPTransport),
 		libp2p.Transport(ws.New),
+		// libp2p.Transport(quic.NewTransport),
 	)
 
 	muxers := libp2p.ChainOptions(
@@ -36,6 +39,7 @@ func main() {
 	listenAddrs := libp2p.ListenAddrStrings(
 		"/ip4/0.0.0.0/tcp/0",
 		"/ip4/0.0.0.0/tcp/0/ws",
+		// "/ip4/0.0.0.0/udp/0/quic",
 	)
 
 	// TODO: Configure libp2p to use a DHT with a libp2p.Routing option
@@ -55,27 +59,28 @@ func main() {
 	for _, addr := range host.Addrs() {
 		fmt.Println("Listening on", addr)
 	}
+	fmt.Println(host.ID())
+	// targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
-	if err != nil {
-		panic(err)
-	}
+	// targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
-	if err != nil {
-		panic(err)
-	}
+	// err = host.Connect(ctx, *targetInfo)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	err = host.Connect(ctx, *targetInfo)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println("Connected to", targetInfo.ID)
+	// fmt.Println("Connected to", targetInfo.ID)
 
 	donec := make(chan struct{}, 1)
 	go chatInputLoop(ctx, host, donec)
 
+	
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT)
 
@@ -86,4 +91,5 @@ func main() {
 	case <-donec:
 		host.Close()
 	}
+	
 }

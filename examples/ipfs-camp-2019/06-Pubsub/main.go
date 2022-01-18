@@ -9,31 +9,31 @@ import (
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
-	"github.com/libp2p/go-libp2p-core/network"
-	"github.com/libp2p/go-libp2p-core/peer"
+	// "github.com/libp2p/go-libp2p-core/network"
+	// "github.com/libp2p/go-libp2p-core/peer"
 	"github.com/libp2p/go-libp2p-core/routing"
 	disc "github.com/libp2p/go-libp2p-discovery"
 	kaddht "github.com/libp2p/go-libp2p-kad-dht"
 	mplex "github.com/libp2p/go-libp2p-mplex"
 	tls "github.com/libp2p/go-libp2p-tls"
 	yamux "github.com/libp2p/go-libp2p-yamux"
-	"github.com/libp2p/go-libp2p/p2p/discovery/mdns"
+	// "github.com/libp2p/go-libp2p/p2p/discovery/mdns"
 	"github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
-	"github.com/multiformats/go-multiaddr"
+	// "github.com/multiformats/go-multiaddr"
 )
 
-type discoveryNotifee struct {
-	h   host.Host
-	ctx context.Context
-}
+// type discoveryNotifee struct {
+// 	h   host.Host
+// 	ctx context.Context
+// }
 
-func (m *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
-	if m.h.Network().Connectedness(pi.ID) != network.Connected {
-		fmt.Printf("Found %s!\n", pi.ID.ShortString())
-		m.h.Connect(m.ctx, pi)
-	}
-}
+// func (m *discoveryNotifee) HandlePeerFound(pi peer.AddrInfo) {
+// 	if m.h.Network().Connectedness(pi.ID) != network.Connected {
+// 		fmt.Printf("Found %s!\n", pi.ID.ShortString())
+// 		m.h.Connect(m.ctx, pi)
+// 	}
+// }
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
@@ -82,29 +82,30 @@ func main() {
 	for _, addr := range host.Addrs() {
 		fmt.Println("Listening on", addr)
 	}
+	fmt.Println(host.ID())
 
-	targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
-	if err != nil {
-		panic(err)
-	}
+	// targetAddr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/tcp/63785/p2p/QmWjz6xb8v9K4KnYEwP5Yk75k5mMBCehzWFLCvvQpYxF3d")
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
-	if err != nil {
-		panic(err)
-	}
+	// targetInfo, err := peer.AddrInfoFromP2pAddr(targetAddr)
+	// if err != nil {
+	// 	panic(err)
+	// }
 
-	err = host.Connect(ctx, *targetInfo)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "connecting to bootstrap: %s", err)
-	} else {
-		fmt.Println("Connected to", targetInfo.ID)
-	}
+	// err = host.Connect(ctx, *targetInfo)
+	// if err != nil {
+	// 	fmt.Fprintf(os.Stderr, "connecting to bootstrap: %s", err)
+	// } else {
+	// 	fmt.Println("Connected to", targetInfo.ID)
+	// }
 
-	notifee := &discoveryNotifee{h: host, ctx: ctx}
-	mdns := mdns.NewMdnsService(host, "", notifee)
-	if err := mdns.Start(); err != nil {
-		panic(err)
-	}
+	// notifee := &discoveryNotifee{h: host, ctx: ctx}
+	// mdns := mdns.NewMdnsService(host, "", notifee)
+	// if err := mdns.Start(); err != nil {
+	// 	panic(err)
+	// }
 
 	err = dht.Bootstrap(ctx)
 	if err != nil {
@@ -113,13 +114,13 @@ func main() {
 
 	routingDiscovery := disc.NewRoutingDiscovery(dht)
 	disc.Advertise(ctx, routingDiscovery, string(chatProtocol))
-	peers, err := disc.FindPeers(ctx, routingDiscovery, string(chatProtocol))
-	if err != nil {
-		panic(err)
-	}
-	for _, peer := range peers {
-		notifee.HandlePeerFound(peer)
-	}
+	// peers, err := disc.FindPeers(ctx, routingDiscovery, string(chatProtocol))
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// for _, peer := range peers {
+	// 	notifee.HandlePeerFound(peer)
+	// }
 
 	donec := make(chan struct{}, 1)
 	go chatInputLoop(ctx, host, donec)

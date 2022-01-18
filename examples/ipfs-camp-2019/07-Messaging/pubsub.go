@@ -10,14 +10,25 @@ import (
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 )
 
+var handles = map[string]string{}
+
 const pubsubTopic = "/libp2p/example/chat/1.0.0"
 
 func pubsubMessageHandler(id peer.ID, msg *SendMessage) {
-	fmt.Printf("%s: %s\n", id.ShortString(), msg.Data)
+	handle, ok := handles[id.String()]
+	if !ok {
+		handle = id.ShortString()
+	}
+	fmt.Printf("%s: %s\n", handle, msg.Data)
 }
 
 func pubsubUpdateHandler(id peer.ID, msg *UpdatePeer) {
-
+	oldHandle, ok := handles[id.String()]
+	if !ok {
+		oldHandle = id.ShortString()
+	}
+	handles[id.String()] = string(msg.UserHandle)
+	fmt.Printf("%s -> %s\n", oldHandle, msg.UserHandle)
 }
 
 func pubsubHandler(ctx context.Context, sub *pubsub.Subscription) {
