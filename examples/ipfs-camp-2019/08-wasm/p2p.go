@@ -97,14 +97,6 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	// Trace log
 	logrus.Traceln("Generated P2P Security and Transport Configurations.")
 
-	// Set up host listener address options
-	// muladdr, err := multiaddr.NewMultiaddr("/ip4/0.0.0.0/tcp/0")
-	// muladdr, err := multiaddr.NewMultiaddr("/ip4/127.0.0.1/udp/0/quic")
-
-	// muladdr, err := multiaddr.NewMultiaddr("/ip6/::/udp/0/quic")
-
-	// listen := libp2p.ListenAddrs(muladdr)
-
 	listenAddrs := libp2p.ListenAddrStrings(
 		"/ip4/0.0.0.0/tcp/0",
 		"/ip4/0.0.0.0/tcp/0/ws",
@@ -148,14 +140,7 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 		return kaddht, err
 	})
 
-	// var dht *kaddht.IpfsDHT
-	// newDHT := func(h host.Host) (routing.PeerRouting, error) {
-	// 	var err error
-	// 	dht, err = kaddht.New(ctx, h)
-	// 	return dht, err
-	// }
-	// routing := libp2p.Routing(newDHT)
-
+	
 	// Trace log
 	logrus.Traceln("Generated P2P Routing Configurations.")
 
