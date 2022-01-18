@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -20,6 +21,9 @@ import (
 	"github.com/libp2p/go-tcp-transport"
 	ws "github.com/libp2p/go-ws-transport"
 	// "github.com/multiformats/go-multiaddr"
+
+	connmgr "github.com/libp2p/go-libp2p-connmgr"
+
 )
 
 // type mdnsNotifee struct {
@@ -59,12 +63,14 @@ func main() {
 		return dht, err
 	}
 	routing := libp2p.Routing(newDHT)
+	conn := libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute))
 
 	host, err := libp2p.New(
 		transports,
 		listenAddrs,
 		muxers,
 		security,
+		conn,
 		routing,
 	)
 	if err != nil {
