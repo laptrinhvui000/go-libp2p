@@ -21,7 +21,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/routing"
 	discovery "github.com/libp2p/go-libp2p-discovery"
 	host "github.com/libp2p/go-libp2p-host"
-	dht "github.com/libp2p/go-libp2p-kad-dht"
+	kaddht "github.com/libp2p/go-libp2p-kad-dht"
 	mplex "github.com/libp2p/go-libp2p-mplex"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	tls "github.com/libp2p/go-libp2p-tls"
@@ -141,12 +141,20 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	logrus.Traceln("Generated P2P NAT Traversal and Relay Configurations.")
 
 	// Declare a KadDHT
-	var kaddht *dht.IpfsDHT
+	var dht *kaddht.IpfsDHT
 	// Setup a routing configuration with the KadDHT
 	routing := libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-		kaddht = setupKadDHT(ctx, h)
-		return kaddht, err
+		dht = setupKadDHT(ctx, h)
+		return dht, err
 	})
+
+	// var dht *kaddht.IpfsDHT
+	// newDHT := func(h host.Host) (routing.PeerRouting, error) {
+	// 	var err error
+	// 	dht, err = kaddht.New(ctx, h)
+	// 	return dht, err
+	// }
+	// routing := libp2p.Routing(newDHT)
 
 	// Trace log
 	logrus.Traceln("Generated P2P Routing Configurations.")
@@ -166,7 +174,7 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	}
 
 	// Return the created host and the kademlia DHT
-	return libhost, kaddht
+	return libhost, dht
 }
 
 // A function that generates a Kademlia DHT object and returns it
@@ -231,7 +239,7 @@ func bootstrapDHT(ctx context.Context, nodehost host.Host, kaddht *dht.IpfsDHT) 
 	var totalbootpeers int
 
 	// Iterate over the default bootstrap peers provided by libp2p
-	for _, peeraddr := range dht.DefaultBootstrapPeers {
+	for _, peeraddr := range kaddht.DefaultBootstrapPeers {
 		// Retrieve the peer address information
 		peerinfo, _ := peer.AddrInfoFromP2pAddr(peeraddr)
 

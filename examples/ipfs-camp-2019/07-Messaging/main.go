@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
+	"sync"
 
 	"github.com/libp2p/go-libp2p"
 	"github.com/libp2p/go-libp2p-core/host"
@@ -23,8 +24,13 @@ import (
 	// "github.com/multiformats/go-multiaddr"
 
 	connmgr "github.com/libp2p/go-libp2p-connmgr"
+	"github.com/libp2p/go-libp2p-core/peer"
+
+	"github.com/ipfs/go-log/v2"
 
 )
+
+var logger = log.Logger("rendezvous")
 
 // type mdnsNotifee struct {
 // 	h   host.Host
@@ -56,14 +62,27 @@ func main() {
 		"/ip4/0.0.0.0/tcp/0/ws",
 	)
 
+	// Declare a KadDHT
+	// var dht *kaddht.IpfsDHT
+	// // Setup a routing configuration with the KadDHT
+	// routing := libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
+	// 	dht = setupKadDHT(ctx, h)
+	// 	return dht, err
+	// })
+	
 	var dht *kaddht.IpfsDHT
 	newDHT := func(h host.Host) (routing.PeerRouting, error) {
 		var err error
-		dht, err = kaddht.New(ctx, h)
+		// dht, err = kaddht.New(ctx, h)
+		dht = setupKadDHT(ctx, h)
+
 		return dht, err
 	}
 	routing := libp2p.Routing(newDHT)
+
 	conn := libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute))
+	nat := libp2p.NATPortMap()
+	relay := libp2p.EnableAutoRelay()
 
 	host, err := libp2p.New(
 		transports,
@@ -72,6 +91,8 @@ func main() {
 		security,
 		conn,
 		routing,
+		nat,
+		relay,
 	)
 	if err != nil {
 		panic(err)
@@ -125,6 +146,21 @@ func main() {
 		panic(err)
 	}
 
+	var wg sync.WaitGroup
+	for _, peerAddr := range kaddht.DefaultBootstrapPeers {
+		peerinfo, _ := peer.AddrInfoFromP2pAddr(peerAddr)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			if err := host.Connect(ctx, *peerinfo); err != nil {
+				logger.Warning(err)
+			} else {
+				logger.Info("Connection established with bootstrap node:", *peerinfo)
+			}
+		}()
+	}
+	wg.Wait()
+
 	donec := make(chan struct{}, 1)
 	go chatInputLoop(ctx, host, topic, donec)
 
@@ -138,4 +174,24 @@ func main() {
 	case <-donec:
 		host.Close()
 	}
+}
+
+func setupKadDHT(ctx context.Context, nodehost host.Host) *kaddht.IpfsDHT {
+	// Create DHT server mode option
+	dhtmode := kaddht.Mode(kaddht.ModeServer)
+	// Rertieve the list of boostrap peer addresses
+	bootstrappeers := kaddht.GetDefaultBootstrapPeerAddrInfos()
+	// Create the DHT bootstrap peers option
+	dhtpeers := kaddht.BootstrapPeers(bootstrappeers...)
+
+	// Trace log
+
+	// Start a Kademlia DHT on the host in server mode
+	kaddht, err := kaddht.New(ctx, nodehost, dhtmode, dhtpeers)
+	// Handle any potential error
+	if err != nil {
+		panic(err)
+	}
+	// Return the KadDHT
+	return kaddht
 }
