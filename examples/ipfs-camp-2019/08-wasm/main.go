@@ -1,21 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"syscall/js"
+
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
-	
 )
 
 var (
-	node *P2P
-    topic *pubsub.Topic
-	err error
+	node  *P2P
+	topic *pubsub.Topic
+	err   error
 )
 
-func init(){
-	println("INIT")
+func init() {
+	fmt.Println("INIT")
 	node = NewP2P()
-	println(node.Host.ID())
+	for _, addr := range node.Host.Addrs() {
+		fmt.Println(addr)
+	}
+	fmt.Println(node.Host.ID())
 }
 
 func joinTopic() {
@@ -30,8 +34,6 @@ func joinTopic() {
 	}
 	go pubsubHandler(node.Ctx, sub)
 
-	
-
 	// stop := make(chan os.Signal, 1)
 	// signal.Notify(stop, syscall.SIGINT)
 
@@ -43,7 +45,6 @@ func joinTopic() {
 	// 	n.Host.Close()
 	// }
 }
-
 
 func testSub() js.Func {
 	jsonFunc := js.FuncOf(func(this js.Value, args []js.Value) interface{} {
@@ -63,7 +64,7 @@ func testSend() js.Func {
 			return "Invalid no of arguments passed"
 		}
 		state := args[0].String()
-		println("input %s \n", state)
+		fmt.Println("input %s", state)
 		// js.Global().Set("goState", state)
 		donec := make(chan struct{}, 1)
 		go chatInputLoop(node.Ctx, node.Host, topic, donec)
@@ -74,9 +75,9 @@ func testSend() js.Func {
 }
 
 func main() {
-	js.Global().Set("testSub", testSub())	
+	js.Global().Set("testSub", testSub())
 
-	js.Global().Set("testSend", testSend())	
+	js.Global().Set("testSend", testSend())
 
 	<-make(chan bool)
 }
