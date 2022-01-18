@@ -81,7 +81,7 @@ func main() {
 	routing := libp2p.Routing(newDHT)
 
 	conn := libp2p.ConnectionManager(connmgr.NewConnManager(100, 400, time.Minute))
-	nat := libp2p.NATPortMap()
+	// nat := libp2p.NATPortMap()
 	relay := libp2p.EnableAutoRelay()
 
 	host, err := libp2p.New(
@@ -91,7 +91,6 @@ func main() {
 		security,
 		conn,
 		routing,
-		nat,
 		relay,
 	)
 	if err != nil {

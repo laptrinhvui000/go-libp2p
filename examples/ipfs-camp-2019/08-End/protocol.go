@@ -1,7 +1,8 @@
 package main
 
 import (
-	
+	"strings"
+	"bufio"
 	"context"
 	"crypto/rand"
 	"fmt"
@@ -69,20 +70,20 @@ func updatePeer(ctx context.Context, topic *pubsub.Topic, id peer.ID, handle str
 }
 
 func chatInputLoop(ctx context.Context, h host.Host, topic *pubsub.Topic, donec chan struct{}) {
-	// scanner := bufio.NewScanner(os.Stdin)
-	// for scanner.Scan() {
-	// 	msg := scanner.Text()
-	// 	if strings.HasPrefix(msg, "/name ") {
-	// 		newHandle := strings.TrimPrefix(msg, "/name ")
-	// 		newHandle = strings.TrimSpace(newHandle)
-	// 		updatePeer(ctx, topic, h.ID(), newHandle)
-	// 	} else {
-	// 		sendMessage(ctx, topic, msg)
-	// 	}
-	// }
-	for {
-		sendMessage(ctx, topic, "Test Cow")
-		time.Sleep(time.Second)
+	scanner := bufio.NewScanner(os.Stdin)
+	for scanner.Scan() {
+		msg := scanner.Text()
+		if strings.HasPrefix(msg, "/name ") {
+			newHandle := strings.TrimPrefix(msg, "/name ")
+			newHandle = strings.TrimSpace(newHandle)
+			updatePeer(ctx, topic, h.ID(), newHandle)
+		} else {
+			sendMessage(ctx, topic, msg)
+		}
 	}
+	// for {
+	// 	sendMessage(ctx, topic, "Test Cow")
+	// 	time.Sleep(time.Second)
+	// }
 	donec <- struct{}{}
 }

@@ -21,7 +21,7 @@ import (
 	"github.com/libp2p/go-libp2p-core/routing"
 	discovery "github.com/libp2p/go-libp2p-discovery"
 	host "github.com/libp2p/go-libp2p-host"
-	kaddht "github.com/libp2p/go-libp2p-kad-dht"
+	dht "github.com/libp2p/go-libp2p-kad-dht"
 	mplex "github.com/libp2p/go-libp2p-mplex"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	tls "github.com/libp2p/go-libp2p-tls"
@@ -134,18 +134,18 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	logrus.Traceln("Generated P2P Stream Multiplexer, Connection Manager Configurations.")
 
 	// Setup NAT traversal and relay options
-	nat := libp2p.NATPortMap()
+	// nat := libp2p.NATPortMap()
 	relay := libp2p.EnableAutoRelay()
 
 	// Trace log
 	logrus.Traceln("Generated P2P NAT Traversal and Relay Configurations.")
 
 	// Declare a KadDHT
-	var dht *kaddht.IpfsDHT
+	var kaddht *dht.IpfsDHT
 	// Setup a routing configuration with the KadDHT
 	routing := libp2p.Routing(func(h host.Host) (routing.PeerRouting, error) {
-		dht = setupKadDHT(ctx, h)
-		return dht, err
+		kaddht = setupKadDHT(ctx, h)
+		return kaddht, err
 	})
 
 	// var dht *kaddht.IpfsDHT
@@ -160,7 +160,7 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	logrus.Traceln("Generated P2P Routing Configurations.")
 
 	// opts := libp2p.ChainOptions(identity, listen, security, transports, muxer, conn, nat, routing, relay)
-	opts := libp2p.ChainOptions(identity, listenAddrs, security, transports, muxers, conn, nat, routing, relay)
+	opts := libp2p.ChainOptions(identity, listenAddrs, security, transports, muxers, conn, routing, relay)
 
 	// Construct a new libP2P host with the created options
 	// libhost, err := libp2p.New(ctx, opts)
@@ -174,7 +174,7 @@ func setupHost(ctx context.Context) (host.Host, *dht.IpfsDHT) {
 	}
 
 	// Return the created host and the kademlia DHT
-	return libhost, dht
+	return libhost, kaddht
 }
 
 // A function that generates a Kademlia DHT object and returns it
@@ -239,7 +239,7 @@ func bootstrapDHT(ctx context.Context, nodehost host.Host, kaddht *dht.IpfsDHT) 
 	var totalbootpeers int
 
 	// Iterate over the default bootstrap peers provided by libp2p
-	for _, peeraddr := range kaddht.DefaultBootstrapPeers {
+	for _, peeraddr := range dht.DefaultBootstrapPeers {
 		// Retrieve the peer address information
 		peerinfo, _ := peer.AddrInfoFromP2pAddr(peeraddr)
 
